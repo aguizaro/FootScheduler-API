@@ -7,7 +7,7 @@ const leagueSchema = new mongoose.Schema({
   current_season: { type: Number, required: true },
   logo: { type: String, required: true },
   country_name: { type: String, required: true },
-  country_flag: { type: String, required: true },
+  country_flag: { type: String, required: true, default: 'world-flag-url'}, //update default to be actual url
   teams: [
     {
       id: { type: Number, required: true },

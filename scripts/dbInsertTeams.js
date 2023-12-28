@@ -3,20 +3,16 @@ const mongoose = require('mongoose');
 const League = require('../models/League');
 
 //Leagues in DB:
-// 39 - Premier League
-// 78 - Bundesliga
-// 61 - Ligue 1
-// 135 - Serie A
-// 88 - Eredivisie
-// 94 - Primeira Liga
-// 140 - La Liga
-// 253 - Major League Soccer
-// 262 - Liga MX
-// 2 - UEFA Champions League
-// 3 - UEFA Europa League
-// 5 - UEFA Nations League
+// 1 - 100
+// 101 - 163
+// 164 - 213
+// 214 - 253
+// 254 - 300
+// 301 - 350
 
-const LEAGUES_TO_UPDATE = [2, 3, 5];
+
+
+const LEAGUES_TO_UPDATE = [21, 71, 180, 804];
 
 async function updateAllLeagues() {
     const MONGODB_URI = process.env.MONGODB_URI;
@@ -29,9 +25,6 @@ async function updateAllLeagues() {
     });
 
     db.once('open', async () => {
-        console.log('Connected to MongoDB');
-
-        // Loop through leagues sequentially
         for (const leagueID of LEAGUES_TO_UPDATE) {
             await updateLeague(leagueID);
         }
@@ -51,7 +44,7 @@ async function updateLeague(leagueID) {
 
             await league.save();
 
-            console.log('League updated successfully:', league);
+            console.log(JSON.stringify(league, null, 2));
         } else {
             console.log('League id:', leagueID, ' not found in db');
         }
@@ -64,7 +57,7 @@ async function fetchTeams(leagueID, current_season) {
     const teams = [];
 
     try {
-        console.log('Fetching teams');
+        //console.log('Fetching teams');
 
         const response = await axios.get(process.env.FETCH_TEAMS_URL + leagueID + '&season=' + current_season, {
             headers: {
@@ -83,10 +76,10 @@ async function fetchTeams(leagueID, current_season) {
             };
 
             teams.push(team);
-            console.log('Added team:', team);
+            //console.log('Added team:', team);
         }
 
-        console.log('Teams for league:', leagueID, 'successfully fetched.');
+        //console.log('Teams for league:', leagueID, 'successfully fetched.');
         return teams;
     } catch (error) {
         console.error('Error fetching teams for league:', leagueID, '->', error.message);
