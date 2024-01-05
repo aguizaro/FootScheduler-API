@@ -10,8 +10,7 @@ async function fetchLeagues() {
 
         const response = await axios.get(process.env.FETCH_LEAGUES_URL, {
             headers: {
-                'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-                'x-rapidapi-host': process.env.RAPIDAPI_HOST
+                'x-apisports-key': process.env.APISPORTS_KEY
             }
         });
 

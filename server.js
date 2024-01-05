@@ -16,10 +16,12 @@ mongoose.connect(MONGODB_URI);
 const testRoute = require('./routes/test');
 const leaguesRoute = require('./routes/leagues');
 const countriesRoute = require('./routes/countries');
+const planRoute = require('./routes/plan');
 
 app.use('/test', testRoute);
 app.use('/leagues', leaguesRoute);
 app.use('/countries', countriesRoute);
+app.use('/plan', planRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

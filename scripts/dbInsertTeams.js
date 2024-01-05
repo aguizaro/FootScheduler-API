@@ -59,10 +59,9 @@ async function fetchTeams(leagueID, current_season) {
     try {
         //console.log('Fetching teams');
 
-        const response = await axios.get(process.env.FETCH_TEAMS_URL + leagueID + '&season=' + current_season, {
+        const response = await axios.get(process.env.FETCH_TEAMS_URL + '?league='+ leagueID + '&season=' + current_season, {
             headers: {
-                'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-                'x-rapidapi-host': process.env.RAPIDAPI_HOST,
+                'x-apisports-key': process.env.APISPORTS_KEY
             },
         });
 
