@@ -17,11 +17,14 @@ const testRoute = require('./routes/test');
 const leaguesRoute = require('./routes/leagues');
 const countriesRoute = require('./routes/countries');
 const planRoute = require('./routes/plan');
+const { authRoute, callbackRoute } = require('./routes/auth');
 
 app.use('/test', testRoute);
 app.use('/leagues', leaguesRoute);
 app.use('/countries', countriesRoute);
 app.use('/plan', planRoute);
+app.use('/auth', authRoute);
+app.use('/authCallback', callbackRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

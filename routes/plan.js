@@ -14,7 +14,6 @@ const processedLeaguesWithAll = []; //league IDs for entries with 'All Teams' sl
  * @param {Array} entries - An array of league ID and team ID pairs.
  * @returns {Array} An array of fixtures.
  */
-
 router.get('/', async (req, res) => {
   const pairs = []; //array of league ID and team ID pairs
   const entries = req.query.entries || [];
