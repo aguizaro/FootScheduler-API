@@ -1,28 +1,44 @@
 const { google } = require('googleapis');
-const calendar = google.calendar('v3');
 const { refreshAccess } = require('./refreshToken');
-const sampleFixtures = require('../sampleFixtures.json'); //update this to use request from route rather than sample data
+const { OAuth2Client } = require('google-auth-library');
 
-async function createPlanner(data, timeZone = 'America/Los_Angeles') {
+const calendar = google.calendar('v3');
+
+/**
+ * This function creates a new public calendar using the given data via google calendar api. This function requires that the root user has a valid refresh token stored in the database.
+ *
+ * @param {string} name - The name used for the google calendar entry.
+ * @param {Object} events - The object representing the calendar events to insert into requestBody.
+ * @param {string} timeZone - The time zone to use for the calendar.
+ * @returns {Object} The public planner links. These links can be used to embed the calendar into a website or import the calendar into a google account.
+ */
+async function createPlanner(name, events, timeZone = 'America/Los_Angeles') {
   try {
-    const client = await refreshAccess(1);
-    const newCalendar = await createCalendar(client, {
-      title: 'FutPlanner',
-      description: 'This calendar contains events representing upcoming football matches.',
+    const authClient = await refreshAccess(1); //get OAuth2 client for root user
+    const newCalendar = await createCalendar(authClient, {
+      title: name,
+      description: 'This calendar contains events representing football matches.',
+    });
+
+    const publicAclRule = await calendar.acl.insert({
+      auth: authClient,
+      calendarId: newCalendar.data.id,
+      requestBody: {
+        role: 'reader',
+        scope: {
+          type: 'default',
+        },
+      },
     });
 
     // insert event into the calendar for each fixture
-    for (let i = 0; i < data.length; i++) {
-      const entry = data[i];
+    for (let i = 0; i < events.length; i++) {
+      const entry = events[i];
       const formattedStartTime = new Date(entry.fixture.timestamp * 1000).toISOString();
       const formattedEndTime = new Date((entry.fixture.timestamp + 7200) * 1000).toISOString(); // 2 hrs later
-      const newEvent = await insertEvent(client, newCalendar.data.id, {
+      const newEvent = await insertEvent(authClient, newCalendar.data.id, {
         title: `${entry.teams.home.name} vs ${entry.teams.away.name} | ${entry.league.name}`,
-        description: `${entry.league.name} - ${entry.league.season} Season - Round: ${lastDigits(
-          entry.league.round,
-        )}\n${entry.teams.home.name} vs ${entry.teams.away.name}\n${entry.fixture.venue.name} - ${
-          entry.fixture.venue.city
-        }, ${entry.league.country}`,
+        description: `${entry.league.name} - ${entry.league.season} Season\nRound: ${entry.league.round}\n${entry.teams.home.name} vs ${entry.teams.away.name}\n${entry.fixture.venue.name} - ${entry.fixture.venue.city}, ${entry.league.country}`,
         startTime: formattedStartTime,
         endTime: formattedEndTime,
         location: `${entry.fixture.venue.name}, ${entry.fixture.venue.city}`,
@@ -34,25 +50,6 @@ async function createPlanner(data, timeZone = 'America/Los_Angeles') {
     return { public_calendar_url, embed_calendar_url };
   } catch (error) {
     console.error('Error in testClient(): ', error);
-  }
-}
-
-/**
- * This function lists all the calendars in the user's account. This functin requires that the user has already authenticated and has a valid refresh token stored in the database.
- *
- * @returns {Object} The list of calendars.
- */
-async function listCalendars() {
-  try {
-    const client = await refreshAccess(1);
-
-    const calendarList = await calendar.calendarList.list({
-      auth: client,
-    });
-
-    console.log(calendarList.data);
-  } catch (error) {
-    console.error('Error in listCalendars(): ', error);
   }
 }
 
@@ -114,23 +111,6 @@ async function insertEvent(authClient, calendarID, body) {
   }
 }
 
-/**
- * This function will extract the last digits from a string and return those digits as a string.
- * @param {string} text The text to search for trailing digits.
- * @returns {string | null} The number of minutes in the description.
- */
-function lastDigits(text) {
-  const match = text.match(/\d+$/);
-  return match ? match[0] : null;
-}
-
-// test create planner with sample fixtures
-createPlanner(sampleFixtures.allFixtures)
-  .then((result) => {
-    console.log(result);
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+module.exports = {
+  createPlanner,
+};

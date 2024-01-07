@@ -6,11 +6,10 @@ const { updateUser } = require('../scripts/modUser.js'); //use createNewUser or 
 
 const credentials = require('../client_secret.json');
 
-// create an OAuth2 client
 const { client_secret, client_id, redirect_uris } = credentials.web;
 const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0], { expires_in: 9000 });
 
-// set the OAuth2 client to be used for all API calls
+// begin OAuth2 flow
 authRouter.get('/', (_, res) => {
   // redirect users to Google's OAuth2 consent screen
   const authUrl = oAuth2Client.generateAuthUrl({

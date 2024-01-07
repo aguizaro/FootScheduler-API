@@ -10,7 +10,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 mongoose.connect(MONGODB_URI);
 
 /**
- * Refresh the access for the given user ID. Requires that the current stored refresh token is valid. This function will update the stored refresh token for the user in the database.
+ * Refresh the access for the given user ID. Requires that the current stored refresh token is valid. This function will use the stored refresh token for the userID to generate a new access token and update the stored refresh token for the userID in the database.
  * @param {number} userID - The user ID to refresh the access for
  * @returns {OAuth2Client | null} The OAuth2 client with the new access token set. This client can be used to make API calls. Null is returned if the refresh token is invalid.
  */

@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const League = require('../models/League');
+const { createPlanner } = require('../scripts/createPlanner');
 
-// global variables
 const processedPairs = []; //array of league ID and team ID pairs that have already been processed
 const leaguesWithAll = []; //league IDs for entries with 'All Teams' slected
 const processedLeaguesWithAll = []; //league IDs for entries with 'All Teams' slected and already processed
@@ -16,6 +16,8 @@ const processedLeaguesWithAll = []; //league IDs for entries with 'All Teams' sl
  */
 router.get('/', async (req, res) => {
   const pairs = []; //array of league ID and team ID pairs
+  const plannerName = req.query.name || 'My FutPlanner';
+  const timeZone = req.query.timeZone || 'America/Los_Angeles';
   const entries = req.query.entries || [];
   let allFixtures = [];
   let currentFixture = [];
@@ -48,8 +50,9 @@ router.get('/', async (req, res) => {
         allFixtures = allFixtures.concat(currentFixture);
       }
     }
+    const planner = await createPlanner(plannerName, allFixtures, timeZone); //create public google calendar with all fixtures
 
-    res.json({ allFixtures }); //return all fixtures as JSON
+    res.json({ public_planner: planner, fixtures: allFixtures });
   } catch (error) {
     console.error('Error in the main handler:', error.message);
     res.status(500).json({ error: 'Internal Server Error' });
