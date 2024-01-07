@@ -15,7 +15,7 @@ authRouter.get('/', (_, res) => {
   // redirect users to Google's OAuth2 consent screen
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
-    scope: ['https://www.googleapis.com/auth/calendar.events'],
+    scope: ['https://www.googleapis.com/auth/calendar'],
   });
   res.redirect(authUrl);
 });

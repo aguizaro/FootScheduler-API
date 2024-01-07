@@ -37,12 +37,6 @@ async function updateUser(id, name, newToken) {
       { $set: { name: name, refreshToken: newToken } },
       { new: true }, // return the updated document
     );
-
-    if (updatedUser) {
-      console.log('User updated successfully: ', updatedUser);
-    } else {
-      console.log('User not found.');
-    }
   } catch (error) {
     console.error('Error updating user:', error);
   }
