@@ -4,9 +4,9 @@ const axios = require('axios');
 const League = require('../models/League');
 const { createPlanner } = require('../scripts/createPlanner');
 
-const processedPairs = []; //array of league ID and team ID pairs that have already been processed
-const leaguesWithAll = []; //league IDs for entries with 'All Teams' slected
-const processedLeaguesWithAll = []; //league IDs for entries with 'All Teams' slected and already processed
+let processedPairs = []; //array of league ID and team ID pairs that have already been processed
+let leaguesWithAll = []; //league IDs for entries with 'All Teams' slected
+let processedLeaguesWithAll = []; //league IDs for entries with 'All Teams' slected and already processed
 
 /**
  * This route handler fetches fixtures from the API.
@@ -15,6 +15,11 @@ const processedLeaguesWithAll = []; //league IDs for entries with 'All Teams' sl
  * @returns {Array} An array of fixtures.
  */
 router.get('/', async (req, res) => {
+  //reset global variables
+  processedPairs = [];
+  leaguesWithAll = [];
+  processedLeaguesWithAll = [];
+
   const pairs = []; //array of league ID and team ID pairs
   const plannerName = req.query.name || 'My FutPlanner';
   const timeZone = req.query.timeZone || 'America/Los_Angeles';
@@ -34,6 +39,7 @@ router.get('/', async (req, res) => {
       pairs.push([league_id, team_id]);
     }
 
+    console.log('pairs:', pairs);
     //process pair into fixtures
     for (let i = 0; i < pairs.length; i++) {
       const league_id = pairs[i][0];
@@ -41,6 +47,7 @@ router.get('/', async (req, res) => {
 
       //only process pairs that are valid -> check criteria in isValidPair()
       if (isValidPair(league_id, team_id)) {
+        console.log('valid pair, processing...', league_id, ' ', team_id);
         currentFixture = await processEntry(league_id, team_id);
         //only add non-empty fixtures
         if (currentFixture.length <= 0)
@@ -48,11 +55,15 @@ router.get('/', async (req, res) => {
 
         currentFixture = removePassedFixtures(currentFixture);
         allFixtures = allFixtures.concat(currentFixture);
+      } else {
+        console.log('invalid pair, skipping...', league_id, ' ', team_id);
       }
     }
     const planner = await createPlanner(plannerName, allFixtures, timeZone); //create public google calendar with all fixtures
+    if (!planner) throw new Error('Error creating planner.');
 
-    res.json({ public_planner: planner, fixtures: allFixtures });
+    console.log('fixtures len:', allFixtures.length, '\n');
+    res.status(200).json({ calendar_name: plannerName, public_calendar_url: planner, fixtures: allFixtures });
   } catch (error) {
     console.error('Error in the main handler:', error.message);
     res.status(500).json({ error: 'Internal Server Error' });

@@ -10,7 +10,7 @@ const calendar = google.calendar('v3');
  * @param {string} name - The name used for the google calendar entry.
  * @param {Object} events - The object representing the calendar events to insert into requestBody.
  * @param {string} timeZone - The time zone to use for the calendar.
- * @returns {Object} The public planner links. These links can be used to embed the calendar into a website or import the calendar into a google account.
+ * @returns {Object} The public planner URL link. This link can be used to embed the calendar into a website or import the calendar into a google account. False is returned if an error occurs.
  */
 async function createPlanner(name, events, timeZone = 'America/Los_Angeles') {
   try {
@@ -19,6 +19,7 @@ async function createPlanner(name, events, timeZone = 'America/Los_Angeles') {
       title: name,
       description: 'This calendar contains events representing football matches.',
     });
+    if (!newCalendar) throw new Error('Error creating calendar.');
 
     const publicAclRule = await calendar.acl.insert({
       auth: authClient,
@@ -46,10 +47,10 @@ async function createPlanner(name, events, timeZone = 'America/Los_Angeles') {
     }
 
     const public_calendar_url = `https://calendar.google.com/calendar/embed?src=${newCalendar.data.id}&ctz=${timeZone}`;
-    const embed_calendar_url = `<iframe src="${public_calendar_url}" style="border: 0" width="400" height="300" frameborder="0" scrolling="no"></iframe>`;
-    return { public_calendar_url, embed_calendar_url };
+    return public_calendar_url;
   } catch (error) {
     console.error('Error in testClient(): ', error);
+    return false;
   }
 }
 
@@ -58,7 +59,7 @@ async function createPlanner(name, events, timeZone = 'America/Los_Angeles') {
  *
  * @param {OAuth2Client} authClient - The OAuth2 client to use to make API calls.
  * @param {Object} body - The object representing the calendar data to insert into requestBody.
- * @returns {Object} The newly created calendar.
+ * @returns {Object} The newly created calendar. False is returned if an error occurs.
  */
 async function createCalendar(authClient, body) {
   try {
@@ -74,6 +75,7 @@ async function createCalendar(authClient, body) {
     return newCalendar;
   } catch (error) {
     console.error('Error in createCalendar(): ', error);
+    return false;
   }
 }
 
