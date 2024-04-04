@@ -1,0 +1,5 @@
+## FutPlanner-API
+
+This project utilizes [ExpressJS](https://expressjs.com/) to handle HTTP requests and define routes on a [NodeJS](https://nodejs.org/) server, integrated with a [MongoDB](https://www.mongodb.com/) database for storing league and team data, as well as user data for an OAuth2 Google Calendar client. This API adheres to RESTful principles, but this was my first time creating a full-stack web application, so I am sure I made plenty of mistakes and I welcome any feedback that may help me learn and improve the work that I do.
+
+It accepts GET requests for an unspecified number of league and team ID pairs. These ID pairs are used to retrieve data from [API-Football](https://www.api-football.com/) (or cached data from my database) of upcoming football fixtures, leverages the [Google Calendar API](https://developers.google.com/calendar/api/guides/overview) to create a public calendar, and inserts each event into this calendar. The API responds with a public link to the newly created Google Calendar. This link can be used to embed the calendar on any webpage, as well as be used to import the public calendar to any personal Google account.
