@@ -10,11 +10,13 @@ const calendar = google.calendar('v3');
  * @param {string} name - The name used for the google calendar entry.
  * @param {Object} events - The object representing the calendar events to insert into requestBody.
  * @param {string} timeZone - The time zone to use for the calendar.
+ * @param {number} reminderMinutes - The number of minutes before the event to send a reminder. If null, no reminder is sent.
  * @returns {Object} The public planner URL link. This link can be used to embed the calendar into a website or import the calendar into a google account. False is returned if an error occurs.
  */
-async function createPlanner(name, events, timeZone = 'America/Los_Angeles') {
+async function createPlanner(name, events, timeZone = 'America/Los_Angeles', reminderMinutes = null) {
   try {
     const authClient = await refreshAccess(1); //get OAuth2 client for root user
+    if (!authClient) throw new Error('Error getting OAuth2 client.');
     const newCalendar = await createCalendar(authClient, {
       title: name,
       description: 'This calendar contains events representing football matches.',
@@ -43,6 +45,7 @@ async function createPlanner(name, events, timeZone = 'America/Los_Angeles') {
         startTime: formattedStartTime,
         endTime: formattedEndTime,
         location: `${entry.fixture.venue.name}, ${entry.fixture.venue.city}`,
+        reminderMinutes: reminderMinutes,
       });
     }
 
@@ -89,23 +92,54 @@ async function createCalendar(authClient, body) {
  */
 async function insertEvent(authClient, calendarID, body) {
   try {
-    if (body.colorId === undefined) body.colorId = 1; //default color is blue
-    const newEvent = await calendar.events.insert({
-      auth: authClient,
-      calendarId: calendarID,
-      requestBody: {
-        summary: body.title,
-        description: body.description,
-        colorId: body.colorId,
-        location: body.location,
-        start: {
-          dateTime: body.startTime,
+    if (!body.colorId) body.colorId = 1; //default color is blue
+    let newEvent = null;
+    if (!body.reminderMinutes) {
+      // create event without reminder if reminderMinutes not provided
+      newEvent = await calendar.events.insert({
+        auth: authClient,
+        calendarId: calendarID,
+        requestBody: {
+          summary: body.title,
+          description: body.description,
+          colorId: body.colorId,
+          location: body.location,
+          start: {
+            dateTime: body.startTime,
+          },
+          end: {
+            dateTime: body.endTime,
+          },
         },
-        end: {
-          dateTime: body.endTime,
+      });
+    } else {
+      // create event with reminder if reminderMinutes provided
+      newEvent = await calendar.events.insert({
+        auth: authClient,
+        calendarId: calendarID,
+        requestBody: {
+          summary: body.title,
+          description: body.description,
+          colorId: body.colorId,
+          location: body.location,
+          start: {
+            dateTime: body.startTime,
+          },
+          end: {
+            dateTime: body.endTime,
+          },
+          reminders: {
+            useDefault: false,
+            overrides: [
+              {
+                method: 'popup',
+                minutes: body.reminderMinutes,
+              },
+            ],
+          },
         },
-      },
-    });
+      });
+    }
 
     return newEvent;
   } catch (error) {

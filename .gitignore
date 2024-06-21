@@ -6,4 +6,5 @@ data/
 .vscode
 *.http
 client_secret.json
+out.json
 

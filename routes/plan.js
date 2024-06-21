@@ -24,6 +24,7 @@ router.get('/', async (req, res) => {
   const plannerName = req.query.name || 'My FutPlanner';
   const timeZone = req.query.timeZone || 'America/Los_Angeles';
   const entries = req.query.entries || [];
+  const reminderMinutes = req.query.reminderMinutes || null;
   let allFixtures = [];
   let currentFixture = [];
 
@@ -59,7 +60,7 @@ router.get('/', async (req, res) => {
         console.log('invalid pair, skipping...', league_id, ' ', team_id);
       }
     }
-    const planner = await createPlanner(plannerName, allFixtures, timeZone); //create public google calendar with all fixtures
+    const planner = await createPlanner(plannerName, allFixtures, timeZone, reminderMinutes); //create public google calendar with all fixtures
     if (!planner) throw new Error('Error creating planner.');
 
     console.log('fixtures len:', allFixtures.length, '\n');
